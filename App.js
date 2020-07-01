@@ -64,6 +64,8 @@ export default class App extends Component<{}> {
       console.log(`Connesso al dispositivo ${device.name}`);
       t
       ToastAndroid.show(`Connesso al dispositivo ${device.name}`, ToastAndroid.SHORT);
+      //Send id device to Arduino
+      BluetoothSerial.write("id000");
     })
     .catch((err) => console.log((err.message)))
   }
