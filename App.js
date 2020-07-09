@@ -62,12 +62,25 @@ export default class App extends Component<{}> {
     BluetoothSerial.connect(device.id)
     .then((res) => {
       console.log(`Connesso al dispositivo ${device.name}`);
-      
       ToastAndroid.show(`Connesso al dispositivo ${device.name}`, ToastAndroid.SHORT);
+
       //Send id device to Arduino
-      BluetoothSerial.write("id000");
+      BluetoothSerial.write("porcosatana12345");
     })
     .catch((err) => console.log((err.message)))
+
+    BluetoothSerial.withDelimiter('\r').then(() => {
+      Promise.all([
+        BluetoothSerial.isEnabled(),
+        BluetoothSerial.list(),
+      ]).then(values => {
+        const [isEnabled, devices] = values;
+      });
+      BluetoothSerial.on('read', data => {
+        console.log(`DATA FROM BLUETOOTH: ${data.data}`);
+        ToastAndroid.show(`DATA FROM BLUETOOTH: ${data.data}`, ToastAndroid.SHORT);
+      });
+    });
   }
   _renderItem(item){
 
