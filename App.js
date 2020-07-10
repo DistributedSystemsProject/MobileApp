@@ -157,18 +157,14 @@ export default class App extends Component<{}> {
     }
   }
   toggleSwitch(){
-    if (this.authorizeOperation("lock")) {
-      BluetoothSerial.write(serverResponse)
-      .then((res) => {
-        console.log(res);
-        console.log('Successfuly wrote to device')
-        this.setState({ connected: true })
-      })
-      .catch((err) => console.log(err.message))
-    } else {
-      console.log('Operazione non consentita');
-      ToastAndroid.show(`Operazione non consentita`, ToastAndroid.SHORT);
-    }
+    this.authorizeOperation("lock");
+    BluetoothSerial.write(serverResponse)
+    .then((res) => {
+      console.log(res);
+      console.log('Successfuly wrote to device')
+      this.setState({ connected: true })
+    })
+    .catch((err) => console.log(err.message))
   }
 
   render() {
