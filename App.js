@@ -116,16 +116,21 @@ export default class App extends Component<{}> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        /*client_id: "1234567890client",
+        device_id: receivedId,
+        client_pass: "clientpass",
+        operation: typeOperation,
+        load: receivedMessage*/
         client_id: "1234567890client",
         device_id: "1234567890device",
         client_pass: "clientpass",
-        operation: "lock",
+        operation: typeOperation,
         load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
       })
     }).then((response) => response.json())
     .then((json) => {
       serverResponse = json;
-      console.log(json);
+      console.log(serverResponse);
       return true;
     })
     .catch((error) => {
@@ -158,6 +163,7 @@ export default class App extends Component<{}> {
   }
   toggleSwitch(){
     this.authorizeOperation("lock");
+    //Qui non penso che funziona è da provare, perche prima deve attendere la risposta true/false
     BluetoothSerial.write(serverResponse)
     .then((res) => {
       console.log(res);
