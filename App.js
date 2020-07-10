@@ -108,7 +108,7 @@ export default class App extends Component<{}> {
   }
 
   //Il client contatta il server per vedere se può effettuare operazioni
-  authorizeOperation(typeOperation) {
+  authorizeOperation() {
     fetch('http://minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
@@ -119,12 +119,12 @@ export default class App extends Component<{}> {
         /*client_id: "1234567890client",
         device_id: receivedId,
         client_pass: "clientpass",
-        operation: typeOperation,
+        operation: "lock",
         load: receivedMessage*/
         client_id: "1234567890client",
         device_id: "1234567890device",
         client_pass: "clientpass",
-        operation: typeOperation,
+        operation: "lock",
         load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
       })
     }).then((response) => response.json())
@@ -162,7 +162,6 @@ export default class App extends Component<{}> {
     }
   }
   toggleSwitch(){
-    this.authorizeOperation("lock");
     //Qui non penso che funziona è da provare, perche prima deve attendere la risposta true/false
     BluetoothSerial.write(serverResponse)
     .then((res) => {
@@ -195,6 +194,11 @@ export default class App extends Component<{}> {
           data={this.state.devices}
           keyExtractor={item => item.id}
           renderItem={(item) => this._renderItem(item)}
+        />
+        <Button
+          onPress={this.authorizeOperation.bind(this)}
+          title="Dioporco"
+          color="#841584"
         />
         <Button
           onPress={this.toggleSwitch.bind(this)}
