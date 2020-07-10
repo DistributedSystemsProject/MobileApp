@@ -117,10 +117,10 @@ export default class App extends Component<{}> {
       },
       body: JSON.stringify({
         client_id: "1234567890client",
-        device_id: receivedId,
+        device_id: "1234567890device",
         client_pass: "clientpass",
-        operation: typeOperation,
-        load: receivedMessage
+        operation: "lock",
+        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
       })
     }).then((response) => response.json())
     .then((json) => {
