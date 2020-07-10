@@ -109,7 +109,7 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    fetch('http:/minecrime.it:8888/authorize-operation', {
+    fetch('http://minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
