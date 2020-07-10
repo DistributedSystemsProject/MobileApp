@@ -80,7 +80,7 @@ export default class App extends Component<{}> {
       BluetoothSerial.on('read', data => {
         console.log(`DATA FROM BLUETOOTH: ${data.data}`);
         ToastAndroid.show(`DATA FROM BLUETOOTH: ${data.data}`, ToastAndroid.SHORT);
-        receivedData = ${data.data};
+        receivedData = data.data;
         //Se è lungo 16 significa che è l'id, senno M1, soluzione brutta però veloce
         if (receivedData.length == 16) receivedId = receivedData;
         else receivedMessage = receivedData;
