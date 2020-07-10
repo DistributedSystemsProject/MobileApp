@@ -125,10 +125,12 @@ export default class App extends Component<{}> {
     }).then((response) => response.json())
     .then((json) => {
       serverResponse = json;
+      console.log(json);
       return true;
     })
     .catch((error) => {
       console.error(error);
+      return false;
     });
   }
 
@@ -155,7 +157,7 @@ export default class App extends Component<{}> {
     }
   }
   toggleSwitch(){
-    if (this.authorizeOperatio("lock")) {
+    if (this.authorizeOperation("lock")) {
       BluetoothSerial.write(serverResponse)
       .then((res) => {
         console.log(res);
@@ -163,6 +165,9 @@ export default class App extends Component<{}> {
         this.setState({ connected: true })
       })
       .catch((err) => console.log(err.message))
+    } else {
+      console.log('Operazione non consentita');
+      ToastAndroid.show(`Operazione non consentita`, ToastAndroid.SHORT);
     }
   }
 
