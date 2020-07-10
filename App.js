@@ -10,8 +10,12 @@ import {
   TouchableOpacity,
   ToastAndroid
 } from 'react-native';
-var _ = require('lodash');
 import BluetoothSerial from 'react-native-bluetooth-serial'
+
+var receivedId;
+var receivedMessage;
+var serverResponse;
+var _ = require('lodash');
 
 export default class App extends Component<{}> {
   constructor (props) {
@@ -76,6 +80,10 @@ export default class App extends Component<{}> {
       BluetoothSerial.on('read', data => {
         console.log(`DATA FROM BLUETOOTH: ${data.data}`);
         ToastAndroid.show(`DATA FROM BLUETOOTH: ${data.data}`, ToastAndroid.SHORT);
+        receivedData = ${data.data};
+        //Se è lungo 16 significa che è l'id, senno M1, soluzione brutta però veloce
+        if (receivedData.length == 16) receivedId = receivedData;
+        else receivedMessage = receivedData;
       });
     });
   }
@@ -99,6 +107,31 @@ export default class App extends Component<{}> {
     .catch((err) => Toast.showShortBottom(err.message))
   }
 
+  //Il client contatta il server per vedere se può effettuare operazioni
+  authorizeOperation(typeOperation) {
+    fetch('http:/minecrime.it:8888/authorize-operation', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: "1234567890client",
+        device_id: receivedId,
+        client_pass: "clientpass",
+        operation: typeOperation,
+        load: receivedMessage
+      })
+    }).then((response) => response.json())
+    .then((json) => {
+      serverResponse = json;
+      return true;
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  }
+
   toggleBluetooth (value) {
     if (value === true) {
       this.enable()
@@ -106,8 +139,8 @@ export default class App extends Component<{}> {
       this.disable()
     }
   }
+
   discoverAvailableDevices () {
-    
     if (this.state.discovering) {
       return false
     } else {
@@ -122,16 +155,18 @@ export default class App extends Component<{}> {
     }
   }
   toggleSwitch(){
-    BluetoothSerial.write("T")
-    .then((res) => {
-      console.log(res);
-      console.log('Successfuly wrote to device')
-      this.setState({ connected: true })
-    })
-    .catch((err) => console.log(err.message))
+    if (this.authorizeOperatio("lock")) {
+      BluetoothSerial.write(serverResponse)
+      .then((res) => {
+        console.log(res);
+        console.log('Successfuly wrote to device')
+        this.setState({ connected: true })
+      })
+      .catch((err) => console.log(err.message))
+    }
   }
-  render() {
 
+  render() {
     return (
       <View style={styles.container}>
       <View style={styles.toolbar}>
