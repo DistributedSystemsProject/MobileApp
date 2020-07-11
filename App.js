@@ -79,7 +79,7 @@ export default class App extends Component<{}> {
       });
       BluetoothSerial.on('read', data => {
         console.log('Dati ricevuti: ${data.data}');
-        receivedData = data.data;
+        receivedData = data.data.trim();
         //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
         if (receivedData.length == 16) {
           receivedId = receivedData;
