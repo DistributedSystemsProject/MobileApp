@@ -83,12 +83,12 @@ export default class App extends Component<{}> {
         //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
         if (receivedData.length == 16) {
           receivedId = receivedData;
-          ToastAndroid.show(`Id ricevuto ${receivedId}`, ToastAndroid.LONG);
+          ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.LONG);
           console.log("Id dispositivo: ${receivedId}")
         } else {
           receivedMessage = receivedData;
-          ToastAndroid.show(`Messaggio ricevuto ${device.name}`, ToastAndroid.LONG);
-          console.log("Id dispositivo: ${receivedMessage}")
+          ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.LONG);
+          console.log("Messaggio ricevuto: ${receivedMessage}")
         }
       });
     });
