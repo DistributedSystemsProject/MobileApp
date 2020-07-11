@@ -135,9 +135,9 @@ export default class App extends Component<{}> {
   }
 
   //In base al bottone premuto, viene scelta l'operazione da fare
-  toggleSwitch(operation){
-    console.log(operation);
-    this.authorizeOperation(operation);
+  toggleSwitch(){
+    //console.log(operation);
+    this.authorizeOperation("lock");
   }
 
   //Se autenticato, vengono inviati i dati al dispositivo
@@ -206,12 +206,12 @@ export default class App extends Component<{}> {
           renderItem={(item) => this._renderItem(item)}
         />
         <Button
-          onPress={this.toggleSwitch("unlock").bind(this)}
+          onPress={this.toggleSwitch.bind(this)}
           title="Apri"
           color="#841584"
         />
         <Button
-          onPress={this.toggleSwitch("lock").bind(this)}
+          onPress={this.toggleSwitch.bind(this)}
           title="Chiudi"
           color="#841584"
         />
