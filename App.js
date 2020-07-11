@@ -78,12 +78,16 @@ export default class App extends Component<{}> {
         const [isEnabled, devices] = values;
       });
       BluetoothSerial.on('read', data => {
-        console.log(`DATA FROM BLUETOOTH: ${data.data}`);
-        ToastAndroid.show(`DATA FROM BLUETOOTH: ${data.data}`, ToastAndroid.SHORT);
+        console.log('Dati ricevuti: ${data.data}');
         receivedData = data.data;
-        //Se è lungo 16 significa che è l'id, senno M1, soluzione brutta però veloce
-        if (receivedData.length == 16) receivedId = receivedData;
-        else receivedMessage = receivedData;
+        //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
+        if (receivedData.length == 16) {
+          receivedId = receivedData;
+          console.log("Id dispositivo: ${receivedId}")
+        } else {
+          receivedMessage = receivedData;
+          console.log("Id dispositivo: ${receivedMessage}")
+        }
       });
     });
   }
@@ -105,38 +109,6 @@ export default class App extends Component<{}> {
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
     .catch((err) => Toast.showShortBottom(err.message))
-  }
-
-  //Il client contatta il server per vedere se può effettuare operazioni
-  authorizeOperation() {
-    fetch('http://minecrime.it:8888/authorize-operation', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        /*client_id: "1234567890client",
-        device_id: receivedId,
-        client_pass: "clientpass",
-        operation: "lock",
-        load: receivedMessage*/
-        client_id: "1234567890client",
-        device_id: "1234567890device",
-        client_pass: "clientpass",
-        operation: "lock",
-        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
-      })
-    }).then((response) => response.json())
-    .then((json) => {
-      serverResponse = json;
-      console.log(serverResponse);
-      return true;
-    })
-    .catch((error) => {
-      console.error(error);
-      return false;
-    });
   }
 
   toggleBluetooth (value) {
@@ -161,15 +133,53 @@ export default class App extends Component<{}> {
       .catch((err) => console.log(err.message))
     }
   }
-  toggleSwitch(){
-    //Qui non penso che funziona è da provare, perche prima deve attendere la risposta true/false
-    BluetoothSerial.write(serverResponse)
+
+  //In base al bottone premuto, viene scelta l'operazione da fare
+  toggleSwitch(operation){
+    console.log(operation);
+    this.authorizeOperation(operation);
+  }
+
+  //Se autenticato, vengono inviati i dati al dispositivo
+  sendToDevice(stuff){
+    BluetoothSerial.write(stuff)
     .then((res) => {
       console.log(res);
-      console.log('Successfuly wrote to device')
+      ToastAndroid.show('Operazione riuscita', ToastAndroid.SHORT);
       this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
+  }
+
+  //Il client contatta il server per vedere se può effettuare operazioni
+  authorizeOperation(typeOperation) {
+    fetch('http://minecrime.it:8888/authorize-operation', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        /*client_id: "1234567890client",
+        device_id: receivedId,
+        client_pass: "clientpass",
+        operation: typeOperation,
+        load: receivedMessage*/
+        client_id: "1234567890client",
+        device_id: "1234567890device",
+        client_pass: "clientpass",
+        operation: typeOperation,
+        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
+      })
+    }).then((response) => response.json())
+    .then((json) => {
+      serverResponse = json;
+      console.log(serverResponse);
+      this.sendToDevice(serverResponse);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   render() {
@@ -196,13 +206,13 @@ export default class App extends Component<{}> {
           renderItem={(item) => this._renderItem(item)}
         />
         <Button
-          onPress={this.authorizeOperation.bind(this)}
-          title="Dioporco"
+          onPress={this.toggleSwitch("unlock")}
+          title="Apri"
           color="#841584"
         />
         <Button
-          onPress={this.toggleSwitch.bind(this)}
-          title="Apri/Chiudi"
+          onPress={this.toggleSwitch("lock")}
+          title="Chiudi"
           color="#841584"
         />
       </View>
