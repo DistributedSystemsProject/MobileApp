@@ -144,7 +144,7 @@ export default class App extends Component<{}> {
 
   //Se autenticato, vengono inviati i dati al dispositivo
   sendToDevice(stuff){
-    BluetoothSerial.write(stuff)
+    BluetoothSerial.write(stuff.otp)
     .then((res) => {
       console.log(res);
       ToastAndroid.show('Operazione riuscita', ToastAndroid.SHORT);
@@ -155,7 +155,7 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    fetch('https://minecrime.it:8888/authorize-operation', {
+    fetch('http://minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
