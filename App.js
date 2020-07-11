@@ -206,12 +206,12 @@ export default class App extends Component<{}> {
           renderItem={(item) => this._renderItem(item)}
         />
         <Button
-          onPress={this.toggleSwitch("unlock")}
+          onPress={this.toggleSwitch("unlock").bind(this)}
           title="Apri"
           color="#841584"
         />
         <Button
-          onPress={this.toggleSwitch("lock")}
+          onPress={this.toggleSwitch("lock").bind(this)}
           title="Chiudi"
           color="#841584"
         />
