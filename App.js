@@ -79,7 +79,7 @@ export default class App extends Component<{}> {
       });
       BluetoothSerial.on('read', data => {
         console.log('Dati ricevuti: ${data.data}');
-        receivedData = data.data.trim();
+        var receivedData = data.data.trim();
         //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
         if (receivedData.length == 16) {
           receivedId = receivedData;
@@ -144,10 +144,10 @@ export default class App extends Component<{}> {
 
   //Se autenticato, vengono inviati i dati al dispositivo
   sendToDevice(stuff){
-    BluetoothSerial.write(stuff.otp)
+    ToastAndroid.show(`Op: ${stuff}`, ToastAndroid.LONG);
+    BluetoothSerial.write(stuff)
     .then((res) => {
       console.log(res);
-      ToastAndroid.show('Operazione riuscita', ToastAndroid.SHORT);
       this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
@@ -162,22 +162,22 @@ export default class App extends Component<{}> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        /*client_id: "1234567890client",
+        client_id: "1234567890client",
         device_id: receivedId,
         client_pass: "clientpass",
         operation: typeOperation,
-        load: receivedMessage*/
-        client_id: "1234567890client",
+        load: receivedMessage
+        /*client_id: "1234567890client",
         device_id: "1234567890device",
         client_pass: "clientpass",
         operation: typeOperation,
-        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
+        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
       })
     }).then((response) => response.json())
     .then((json) => {
       serverResponse = json;
       console.log(serverResponse);
-      this.sendToDevice(serverResponse);
+      this.sendToDevice(serverResponse.otp);
     })
     .catch((error) => {
       console.error(error);
