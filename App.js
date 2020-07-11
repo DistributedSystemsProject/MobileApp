@@ -137,17 +137,20 @@ export default class App extends Component<{}> {
   }
 
   //In base al bottone premuto, viene scelta l'operazione da fare
-  toggleSwitch(){
-    //console.log(operation);
+  openLocker(){
+    this.authorizeOperation("unlock");
+  }
+  closeLocker(){
     this.authorizeOperation("lock");
   }
 
-  //Se autenticato, vengono inviati i dati al dispositivo
-  sendToDevice(stuff){
-    ToastAndroid.show(`Op: ${stuff}`, ToastAndroid.LONG);
-    BluetoothSerial.write(stuff)
+  //Se autenticato, viene inviato il One Time Pad al dispositivo
+  sendToDevice(otp){
+    console.log(otp);
+    BluetoothSerial.write(otp)
     .then((res) => {
       console.log(res);
+      ToastAndroid.show(`Successo. OTP: ${otp}`, ToastAndroid.LONG);
       this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
@@ -208,12 +211,12 @@ export default class App extends Component<{}> {
           renderItem={(item) => this._renderItem(item)}
         />
         <Button
-          onPress={this.toggleSwitch.bind(this)}
+          onPress={this.openLocker.bind(this)}
           title="Apri"
           color="#841584"
         />
         <Button
-          onPress={this.toggleSwitch.bind(this)}
+          onPress={this.closeLocker.bind(this)}
           title="Chiudi"
           color="#841584"
         />
