@@ -7,6 +7,7 @@ import {
   Button,
   FlatList,
   Switch,
+  Image,
   TouchableOpacity,
   ToastAndroid
 } from 'react-native';
@@ -14,14 +15,13 @@ import BluetoothSerial from 'react-native-bluetooth-serial'
 
 var receivedId;
 var receivedMessage;
-var serverResponse;
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
   constructor (props) {
     super(props)
     this.state = {
-      TextHolder: "In attesa di ricevere l'OTP",
+      icon: require('./src/images/locked.png'),
       isEnabled: false,
       discovering: false,
       devices: [],
@@ -145,19 +145,6 @@ export default class App extends Component<{}> {
     this.authorizeOperation("lock");
   }
 
-  //Se autenticato, viene inviato il One Time Pad al dispositivo
-  sendToDevice(otp){
-    console.log(otp);
-    this.setState({ TextHolder: otp });
-    BluetoothSerial.write(otp)
-    .then((res) => {
-      console.log(res);
-      ToastAndroid.show(`Successo`, ToastAndroid.LONG);
-      this.setState({ connected: true })
-    })
-    .catch((err) => console.log(err.message))
-  }
-
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
     fetch('https://minecrime.it:8888/authorize-operation', {
@@ -180,27 +167,44 @@ export default class App extends Component<{}> {
       })
     }).then((response) => response.json())
     .then((json) => {
-      serverResponse = json;
-      console.log(serverResponse);
-      this.sendToDevice(serverResponse.otp);
+      var serverResponse = json;
+      console.log(serverResponse.otp);
+      this.sendToDevice(serverResponse.otp, typeOperation);
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
+  //Se autenticato, viene inviato il One Time Pad al dispositivo
+  sendToDevice(otp, operation){
+    console.log(otp);
+    BluetoothSerial.write(otp)
+    .then((res) => {
+      console.log(res);
+      ToastAndroid.show(`Successo`, ToastAndroid.LONG);
+      if (operation=="lock") {
+        this.setState({ icon: require('./src/images/locked.png') });
+      } else if (operation=="unlock") {
+        this.setState({ icon: require('./src/images/unlocked.png') });
+      }
+      this.setState({ connected: true })
+    })
+    .catch((err) => console.log(err.message))
+  }
+
   render() {
     return (
       <View style={styles.container}>
-      <View style={styles.toolbar}>
-            <Text style={styles.toolbarTitle}>Lista dispositivi Bluetooth</Text>
-            <View style={styles.toolbarButton}>
-              <Switch
-                value={this.state.isEnabled}
-                onValueChange={(val) => this.toggleBluetooth(val)}
-              />
-            </View>
-      </View>
+        <View style={styles.toolbar}>
+          <Text style={styles.toolbarTitle}>Lista dispositivi Bluetooth</Text>
+          <View style={styles.toolbarButton}>
+            <Switch
+              value={this.state.isEnabled}
+              onValueChange={(val) => this.toggleBluetooth(val)}
+            />
+          </View>
+        </View>
         <Button
           onPress={this.discoverAvailableDevices.bind(this)}
           title="Trova dispositivi"
@@ -212,16 +216,21 @@ export default class App extends Component<{}> {
           keyExtractor={item => item.id}
           renderItem={(item) => this._renderItem(item)}
         />
-        <Text style={styles.toolbarTitle}>{this.state.TextHolder}</Text>
+        <View style={styles.center}>
+          <Image
+            source={ this.state.icon }
+            style={styles.imageLocker}
+          />
+        </View>
         <Button
           onPress={this.openLocker.bind(this)}
           title="Apri"
-          color="#841584"
+          style={styles.buttonAction}
         />
         <Button
           onPress={this.closeLocker.bind(this)}
           title="Chiudi"
-          color="#841584"
+          style={styles.buttonAction}
         />
       </View>
     );
@@ -232,6 +241,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5FCFF',
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   toolbar:{
     paddingTop:30,
@@ -256,5 +269,14 @@ const styles = StyleSheet.create({
   deviceNameWrap: {
     margin: 10,
     borderBottomWidth:1
+  },
+  imageLocker: {
+    width: 200,
+    height: 200,
+    marginBottom: 100
+  },
+  buttonAction: {
+    marginBottom: 100,
+    color: "black"
   }
 });
