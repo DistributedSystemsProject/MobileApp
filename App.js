@@ -21,6 +21,7 @@ export default class App extends Component<{}> {
   constructor (props) {
     super(props)
     this.state = {
+      TextHolder: "In attesa di ricevere l'OTP",
       isEnabled: false,
       discovering: false,
       devices: [],
@@ -147,10 +148,11 @@ export default class App extends Component<{}> {
   //Se autenticato, viene inviato il One Time Pad al dispositivo
   sendToDevice(otp){
     console.log(otp);
+    this.setState({ TextHolder: otp });
     BluetoothSerial.write(otp)
     .then((res) => {
       console.log(res);
-      ToastAndroid.show(`Successo. OTP: ${otp}`, ToastAndroid.LONG);
+      ToastAndroid.show(`Successo`, ToastAndroid.LONG);
       this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
@@ -158,23 +160,23 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    fetch('http://minecrime.it:8888/authorize-operation', {
+    fetch('https://minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        client_id: "1234567890client",
+        /*client_id: "1234567890client",
         device_id: receivedId,
         client_pass: "clientpass",
         operation: typeOperation,
-        load: receivedMessage
-        /*client_id: "1234567890client",
+        load: receivedMessage*/
+        client_id: "1234567890client",
         device_id: "1234567890device",
         client_pass: "clientpass",
         operation: typeOperation,
-        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
+        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
       })
     }).then((response) => response.json())
     .then((json) => {
@@ -210,6 +212,7 @@ export default class App extends Component<{}> {
           keyExtractor={item => item.id}
           renderItem={(item) => this._renderItem(item)}
         />
+        <Text style={styles.toolbarTitle}>{this.state.TextHolder}</Text>
         <Button
           onPress={this.openLocker.bind(this)}
           title="Apri"
