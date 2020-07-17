@@ -147,7 +147,7 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    fetch('https://minecrime.it:8888/authorize-operation', {
+    fetch('https://www.minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -182,7 +182,7 @@ export default class App extends Component<{}> {
     BluetoothSerial.write(otp)
     .then((res) => {
       console.log(res);
-      ToastAndroid.show(`Successo`, ToastAndroid.LONG);
+      ToastAndroid.show(`Successo`, ToastAndroid.SHORT);
       if (operation=="lock") {
         this.setState({ icon: require('./src/images/locked.png') });
       } else if (operation=="unlock") {
