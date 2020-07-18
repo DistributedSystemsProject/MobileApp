@@ -170,7 +170,7 @@ export default class App extends Component<{}> {
       }).then((response) => response.json())
       .then((json) => {
         var serverResponse = json;
-        ticket = json.ticket;
+        savedTicket = json.ticket;
         console.log(serverResponse.load);
         this.sendToDevice(serverResponse.load, typeOperation);
       })
