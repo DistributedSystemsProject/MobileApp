@@ -148,7 +148,7 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    if (!ticket) {
+    if (!savedTicket) {
       fetch('https://www.minecrime.it:8888/authorize-operation', {
         method: 'POST',
         headers: {
