@@ -15,6 +15,7 @@ import BluetoothSerial from 'react-native-bluetooth-serial'
 
 var receivedId;
 var receivedMessage;
+var savedTicket;
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
@@ -147,33 +148,57 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    fetch('https://www.minecrime.it:8888/authorize-operation', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        /*client_id: "1234567890client",
-        device_id: receivedId,
-        client_pass: "clientpass",
-        operation: typeOperation,
-        load: receivedMessage*/
-        client_id: "1234567890client",
-        device_id: "1234567890device",
-        client_pass: "clientpass",
-        operation: typeOperation,
-        load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
+    if (!ticket) {
+      fetch('https://www.minecrime.it:8888/authorize-operation', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          client_id: "1234567890client",
+          device_id: receivedId,
+          client_pass: "clientpass",
+          operation: typeOperation,
+          load: receivedMessage
+          /*client_id: "1234567890client",
+          device_id: "1234567890device",
+          client_pass: "clientpass",
+          operation: typeOperation,
+          load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
+        })
+      }).then((response) => response.json())
+      .then((json) => {
+        var serverResponse = json;
+        ticket = json.ticket;
+        console.log(serverResponse.load);
+        this.sendToDevice(serverResponse.load, typeOperation);
       })
-    }).then((response) => response.json())
-    .then((json) => {
-      var serverResponse = json;
-      console.log(serverResponse.otp);
-      this.sendToDevice(serverResponse.otp, typeOperation);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+      .catch((error) => {
+        console.error(error);
+      });
+    } else {
+      fetch('https://www.minecrime.it:8888/confirm-operation', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ticket: savedTicket,
+          load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="
+        })
+      }).then((response) => response.json())
+      .then((json) => {
+        var serverResponse = json;
+        savedTicket = "";
+        console.log(serverResponse.load);
+        this.sendToDevice(serverResponse.load, typeOperation);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    }
   }
 
   //Se autenticato, viene inviato il One Time Pad al dispositivo
