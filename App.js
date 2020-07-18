@@ -22,6 +22,7 @@ export default class App extends Component<{}> {
   constructor (props) {
     super(props)
     this.state = {
+      TextHolder: "",
       icon: require('./src/images/locked.png'),
       isEnabled: false,
       discovering: false,
@@ -171,6 +172,7 @@ export default class App extends Component<{}> {
       .then((json) => {
         var serverResponse = json;
         savedTicket = json.ticket;
+        this.setState({ TextHolder: savedTicket });
         console.log(serverResponse.load);
         this.sendToDevice(serverResponse.load, typeOperation);
       })
@@ -247,6 +249,7 @@ export default class App extends Component<{}> {
             style={styles.imageLocker}
           />
         </View>
+        <Text style={styles.toolbarTitle}>{this.state.TextHolder}</Text>
         <Button
           onPress={this.openLocker.bind(this)}
           title="Apri"
