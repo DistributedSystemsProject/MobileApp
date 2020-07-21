@@ -87,16 +87,17 @@ export default class App extends Component<{}> {
         //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
         if (receivedData.length == 16) {
           receivedId = receivedData;
-          ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.LONG);
+          ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.SHORT);
           console.log("Id dispositivo: ${receivedId}");
         } else {
           receivedMessage = receivedData;
-          ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.LONG);
+          ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
           console.log("Messaggio ricevuto: ${receivedMessage}");
           //Se siamo al secondo giro, l'operazione parte in automatico
+          ToastAndroid.show(`${savedTicket}`, ToastAndroid.SHORT);
           if (savedTicket) {
-            if (this.lastOperation == "lock") this.closeLocker();
-            else if (this.lastOperation == "unlock") this.openLocker();
+            if (this.lastOperation === "lock") this.closeLocker();
+            else if (this.lastOperation === "unlock") this.openLocker();
           }
         }
       });
