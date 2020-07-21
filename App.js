@@ -86,15 +86,14 @@ export default class App extends Component<{}> {
         //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
         if (receivedData.length == 16) {
           receivedId = receivedData;
-          ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.SHORT);
+          //ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.SHORT);
           console.log("Id dispositivo: ${receivedId}");
         } else {
           receivedMessage = receivedData;
-          ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
+          //ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
           console.log("Messaggio ricevuto: ${receivedMessage}");
           //Se siamo al secondo giro, l'operazione parte in automatico
           if (savedTicket) {
-            ToastAndroid.show(`Ultima op: ${this.state.lastOperation}`, ToastAndroid.LONG);
             if (this.state.lastOperation === "lock") this.closeLocker();
             else if (this.state.lastOperation === "unlock") this.openLocker();
           }
@@ -118,6 +117,7 @@ export default class App extends Component<{}> {
 
   disable () {
     //Reset step
+    this.setState({ icon: require('./src/images/locked.png') });
     savedTicket = "";
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
@@ -220,7 +220,7 @@ export default class App extends Component<{}> {
     BluetoothSerial.write(otp)
     .then((res) => {
       console.log(res);
-      ToastAndroid.show(`Successo`, ToastAndroid.SHORT);
+      ToastAndroid.show(`Operazione effettuata`, ToastAndroid.SHORT);
       if (operation=="lock") {
         this.setState({ icon: require('./src/images/locked.png') });
       } else if (operation=="unlock") {
