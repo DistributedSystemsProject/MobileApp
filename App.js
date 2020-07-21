@@ -95,9 +95,9 @@ export default class App extends Component<{}> {
           console.log("Messaggio ricevuto: ${receivedMessage}");
           //Se siamo al secondo giro, l'operazione parte in automatico
           if (savedTicket) {
-            ToastAndroid.show(`Ultima op: ${this.lastOperation}`, ToastAndroid.LONG);
-            if (this.lastOperation === "lock") this.closeLocker();
-            else if (this.lastOperation === "unlock") this.openLocker();
+            ToastAndroid.show(`Ultima op: ${this.state.lastOperation}`, ToastAndroid.LONG);
+            if (this.state.lastOperation === "lock") this.closeLocker();
+            else if (this.state.lastOperation === "unlock") this.openLocker();
           }
         }
       });
