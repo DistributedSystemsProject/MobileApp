@@ -13,16 +13,15 @@ import {
 } from 'react-native';
 import BluetoothSerial from 'react-native-bluetooth-serial'
 
-var receivedId;
-var receivedMessage;
-var savedTicket;
+const idClient = "1234567890client";
+const pwdClient = "clientpass";
+var receivedId, receivedMessage, savedTicket;
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
   constructor (props) {
     super(props)
     this.state = {
-      TextHolder: "",
       icon: require('./src/images/locked.png'),
       isEnabled: false,
       discovering: false,
@@ -118,6 +117,8 @@ export default class App extends Component<{}> {
   }
 
   disable () {
+    //Reset step
+    savedTicket = "";
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
     .catch((err) => Toast.showShortBottom(err.message))
@@ -149,11 +150,11 @@ export default class App extends Component<{}> {
   //In base al bottone premuto, viene scelta l'operazione da fare
   openLocker(){
     this.setState({ lastOperation: "unlock" });
-    this.authorizeOperation("unlock");
+    this.authorizeOperation(this.state.lastOperation);
   }
   closeLocker(){
     this.setState({ lastOperation: "lock" });
-    this.authorizeOperation("lock");
+    this.authorizeOperation(this.state.lastOperation);
   }
 
   //Il client contatta il server per vedere se può effettuare operazioni
@@ -166,14 +167,14 @@ export default class App extends Component<{}> {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          client_id: "1234567890client",
+          client_id: idClient,
           device_id: receivedId,
-          client_pass: "clientpass",
+          client_pass: pwdClient,
           operation: typeOperation,
           load: receivedMessage
-          /*client_id: "1234567890client",
+          /*client_id: idClient,
           device_id: "1234567890device",
-          client_pass: "clientpass",
+          client_pass: pwdClient,
           operation: typeOperation,
           load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
         })
@@ -181,7 +182,6 @@ export default class App extends Component<{}> {
       .then((json) => {
         var serverResponse = json;
         savedTicket = json.ticket;
-        this.setState({ TextHolder: savedTicket });
         console.log(serverResponse.load);
         this.sendToDevice(serverResponse.load, typeOperation);
       })
@@ -260,7 +260,6 @@ export default class App extends Component<{}> {
             style={styles.imageLocker}
           />
         </View>
-        <Text style={styles.toolbarTitle}>{this.state.TextHolder}</Text>
         <Button
           onPress={this.openLocker.bind(this)}
           title="Apri"
