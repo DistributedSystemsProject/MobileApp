@@ -93,7 +93,7 @@ export default class App extends Component<{}> {
           //ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
           console.log("Messaggio ricevuto: ${receivedMessage}");
           //Se siamo al secondo giro, l'operazione parte in automatico
-          if (savedTicket) {
+          if (savedTicket.length != 0) {
             if (this.state.lastOperation === "lock") this.closeLocker();
             else if (this.state.lastOperation === "unlock") this.openLocker();
           }
@@ -159,7 +159,7 @@ export default class App extends Component<{}> {
 
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
-    if (!savedTicket) {
+    if (savedTicket.length == 0) {
       fetch('https://www.minecrime.it:8888/authorize-operation', {
         method: 'POST',
         headers: {
