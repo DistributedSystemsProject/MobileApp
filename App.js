@@ -26,6 +26,7 @@ export default class App extends Component<{}> {
       icon: require('./src/images/locked.png'),
       isEnabled: false,
       discovering: false,
+      lastOperation: "lock",
       devices: [],
       unpairedDevices: [],
       connected: false,
@@ -87,11 +88,16 @@ export default class App extends Component<{}> {
         if (receivedData.length == 16) {
           receivedId = receivedData;
           ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.LONG);
-          console.log("Id dispositivo: ${receivedId}")
+          console.log("Id dispositivo: ${receivedId}");
         } else {
           receivedMessage = receivedData;
           ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.LONG);
-          console.log("Messaggio ricevuto: ${receivedMessage}")
+          console.log("Messaggio ricevuto: ${receivedMessage}");
+          //Se siamo al secondo giro, l'operazione parte in automatico
+          if (savedTicket) {
+            if (this.lastOperation == "lock") this.closeLocker();
+            else if (this.lastOperation == "unlock") this.openLocker();
+          }
         }
       });
     });
@@ -118,22 +124,22 @@ export default class App extends Component<{}> {
 
   toggleBluetooth (value) {
     if (value === true) {
-      this.enable()
+      this.enable();
     } else {
-      this.disable()
+      this.disable();
     }
   }
 
   discoverAvailableDevices () {
     if (this.state.discovering) {
-      return false
+      return false;
     } else {
       this.setState({ discovering: true })
       BluetoothSerial.discoverUnpairedDevices()
       .then((unpairedDevices) => {
         const uniqueDevices = _.uniqBy(unpairedDevices, 'id');
         console.log(uniqueDevices);
-        this.setState({ unpairedDevices: uniqueDevices, discovering: false })
+        this.setState({ unpairedDevices: uniqueDevices, discovering: false });
       })
       .catch((err) => console.log(err.message))
     }
@@ -141,9 +147,11 @@ export default class App extends Component<{}> {
 
   //In base al bottone premuto, viene scelta l'operazione da fare
   openLocker(){
+    this.setState({ lastOperation: "unlock" });
     this.authorizeOperation("unlock");
   }
   closeLocker(){
+    this.setState({ lastOperation: "lock" });
     this.authorizeOperation("lock");
   }
 
