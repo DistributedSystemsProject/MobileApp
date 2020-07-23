@@ -15,7 +15,9 @@ import BluetoothSerial from 'react-native-bluetooth-serial'
 
 const idClient = "1234567890client";
 const pwdClient = "clientpass";
-var receivedId, receivedMessage, savedTicket;
+var receivedId = "";
+var receivedMessage = "";
+var savedTicket = "";
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
@@ -149,10 +151,12 @@ export default class App extends Component<{}> {
 
   //In base al bottone premuto, viene scelta l'operazione da fare
   openLocker(){
+    this.savedTicket = "";
     this.setState({ lastOperation: "unlock" });
     this.authorizeOperation(this.state.lastOperation);
   }
   closeLocker(){
+    this.savedTicket = "";
     this.setState({ lastOperation: "lock" });
     this.authorizeOperation(this.state.lastOperation);
   }
