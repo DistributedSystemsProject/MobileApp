@@ -29,8 +29,7 @@ export default class App extends Component<{}> {
       discovering: false,
       lastOperation: "lock",
       devices: [],
-      unpairedDevices: [],
-      connected: false,
+      unpairedDevices: []
     }
   }
   componentDidMount(){
@@ -161,6 +160,16 @@ export default class App extends Component<{}> {
     this.authorizeOperation(this.state.lastOperation);
   }
 
+  //Richiesta ad Arduino del load
+  requestLoad(){
+    BluetoothSerial.write("Ready")
+    .then((res) => {
+      console.log(res);
+      ToastAndroid.show(`Device contattato`, ToastAndroid.SHORT);
+    })
+    .catch((err) => console.log(err.message))
+  }
+
   //Il client contatta il server per vedere se può effettuare operazioni
   authorizeOperation(typeOperation) {
     if (savedTicket.length == 0) {
@@ -230,7 +239,6 @@ export default class App extends Component<{}> {
       } else if (operation=="unlock") {
         this.setState({ icon: require('./src/images/unlocked.png') });
       }
-      this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
   }
@@ -264,6 +272,11 @@ export default class App extends Component<{}> {
             style={styles.imageLocker}
           />
         </View>
+        <Button
+          onPress={this.requestLoad.bind(this)}
+          title="Contatta device"
+          style={styles.buttonAction}
+        />
         <Button
           onPress={this.openLocker.bind(this)}
           title="Apri"
