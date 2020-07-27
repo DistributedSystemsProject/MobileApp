@@ -19,3 +19,6 @@ or, if you want to run the app on an iOS device:
 
 # Screenshots
 
+![Screen 1](https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/unlocked_screen.png)
+![Screen 2](https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/locked_screen.png)
+
