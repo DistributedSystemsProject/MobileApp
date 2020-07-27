@@ -19,6 +19,7 @@ or, if you want to run the app on an iOS device:
 
 # Screenshots
 
-<img src="https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/locked_screen.jpg" alt="Screen 1" width="100" height="100">
-<img src="https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/unlocked_screen.jpg" alt="Screen 2" width="100" height="100">
+<img src="https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/locked_screen.jpg" alt="Screen 1" width="216" height="468">
+<br>
+<img src="https://raw.githubusercontent.com/DistributedSystemsProject/MobileApp/master/src/images/screenshots/unlocked_screen.jpg" alt="Screen 2" width="216" height="468">
 
