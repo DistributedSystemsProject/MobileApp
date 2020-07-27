@@ -238,8 +238,11 @@ export default class App extends Component<{}> {
   render() {
     return (
       <View style={styles.container}>
+        <View style={styles.mainToolbar}>
+          <Text style={styles.mainToolbarTitle}>ARDUINO SECURE LOCKER</Text>
+        </View>
         <View style={styles.toolbar}>
-          <Text style={styles.toolbarTitle}>Lista dispositivi Bluetooth</Text>
+          <Text style={styles.toolbarTitle}>Attiva/Disattiva Bluetooth</Text>
           <View style={styles.toolbarButton}>
             <Switch
               value={this.state.isEnabled}
@@ -250,7 +253,6 @@ export default class App extends Component<{}> {
         <Button
           onPress={this.discoverAvailableDevices.bind(this)}
           title="Trova dispositivi"
-          color="#841584"
         />
         <FlatList
           style={{flex:1}}
@@ -264,16 +266,19 @@ export default class App extends Component<{}> {
             style={styles.imageLocker}
           />
         </View>
-        <Button
-          onPress={this.openLocker.bind(this)}
-          title="Apri"
-          style={styles.buttonAction}
-        />
-        <Button
-          onPress={this.closeLocker.bind(this)}
-          title="Chiudi"
-          style={styles.buttonAction}
-        />
+        <View style={styles.buttonView1}>
+          <Button
+            onPress={this.openLocker.bind(this)}
+            title="Apri"
+            style={styles.buttonAction}
+          />
+        </View>
+        <View style={styles.buttonView2}>
+          <Button
+            onPress={this.closeLocker.bind(this)}
+            title="Chiudi"
+          />
+        </View>
       </View>
     );
   }
@@ -281,28 +286,34 @@ export default class App extends Component<{}> {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#F5FCFF',
+    flex: 1
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+  mainToolbar:{
+    padding: 20,
+    flexDirection:'row'
+  },
+  mainToolbarTitle:{
+    textAlign:'center',
+    fontWeight:'bold',
+    fontSize: 22,
+    flex:1,
+    marginTop:6
+  },
   toolbar:{
-    paddingTop:30,
-    paddingBottom:30,
+    padding: 20,
     flexDirection:'row'
   },
   toolbarButton:{
-    width: 50,
-    marginTop: 8,
+    width: 50
   },
   toolbarTitle:{
     textAlign:'center',
-    fontWeight:'bold',
-    fontSize: 20,
-    flex:1,
-    marginTop:6
+    fontSize: 18,
+    flex:1
   },
   deviceName: {
     fontSize: 17,
@@ -315,10 +326,16 @@ const styles = StyleSheet.create({
   imageLocker: {
     width: 200,
     height: 200,
-    marginBottom: 100
+    marginBottom: 50
   },
-  buttonAction: {
-    marginBottom: 100,
-    color: "black"
+  buttonView1: {
+    width: "50%",
+    marginBottom: 10,
+    marginLeft: "25%"
+  },
+  buttonView2: {
+    width: "50%",
+    paddingBottom: 40,
+    marginLeft: "25%"
   }
 });
