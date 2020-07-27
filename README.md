@@ -10,8 +10,11 @@ https://reactnative.dev/docs/environment-setup
 # Usage
 
 Once you have downloaded the repository, just execute the command:
+
 `npx react-native run-android`
+
 or, if you want to run the app on an iOS device:
+
 `npx react-native run-ios`
 
 # Screenshots
