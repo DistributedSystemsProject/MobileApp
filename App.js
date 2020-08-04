@@ -193,7 +193,7 @@ export default class App extends Component<{}> {
         console.error(error);
       });
     } else {
-      fetch('https://www.minecrime.it:8888/confirm-operation', {
+      fetch('https://www.minecrime.it:8888/result', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
