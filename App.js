@@ -94,11 +94,6 @@ export default class App extends Component<{}> {
           receivedMessage = receivedData;
           //ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
           console.log("Messaggio ricevuto: ${receivedMessage}");
-          //Se siamo al secondo giro, l'operazione parte in automatico
-          if (savedTicket.length != 0) {
-            if (this.state.lastOperation === "lock") this.closeLocker();
-            else if (this.state.lastOperation === "unlock") this.openLocker();
-          }
         }
       });
     });
