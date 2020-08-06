@@ -27,54 +27,43 @@ export default class App extends Component<{}> {
       icon: require('./src/images/locked.png'),
       isEnabled: false,
       discovering: false,
-      lastOperation: "lock",
       devices: [],
-      unpairedDevices: [],
-      connected: false,
+      unpairedDevices: []
     }
   }
-  componentDidMount(){
 
+  componentDidMount(){
     Promise.all([
       BluetoothSerial.isEnabled(),
       BluetoothSerial.list()
     ])
     .then((values) => {
-      const [ isEnabled, devices ] = values
-
+      const [ isEnabled, devices ] = values;
       this.setState({ isEnabled, devices })
     })
-
     BluetoothSerial.on('bluetoothEnabled', () => {
-
       Promise.all([
         BluetoothSerial.isEnabled(),
         BluetoothSerial.list()
       ])
       .then((values) => {
-        const [ isEnabled, devices ] = values
+        const [ isEnabled, devices ] = values;
         this.setState({  devices })
       })
-
       BluetoothSerial.on('bluetoothDisabled', () => {
-
          this.setState({ devices: [] })
-
       })
       BluetoothSerial.on('error', (err) => console.log(`Error: ${err.message}`))
-
     })
-
   }
-  connect (device) {
-    this.setState({ connecting: true })
+
+  connect(device) {
     BluetoothSerial.connect(device.id)
     .then((res) => {
       console.log(`Connesso al dispositivo ${device.name}`);
       ToastAndroid.show(`Connesso al dispositivo ${device.name}`, ToastAndroid.SHORT);
     })
     .catch((err) => console.log((err.message)))
-
     BluetoothSerial.withDelimiter('\r').then(() => {
       Promise.all([
         BluetoothSerial.isEnabled(),
@@ -83,50 +72,54 @@ export default class App extends Component<{}> {
         const [isEnabled, devices] = values;
       });
       BluetoothSerial.on('read', data => {
-        console.log('Dati ricevuti: ${data.data}');
         var receivedData = data.data.trim();
-        //Se è lungo 16 significa che è l'id iniziale del device, altrimenti è il messaggio
-        if (receivedData.length == 16) {
-          receivedId = receivedData;
-          //ToastAndroid.show(`Id dispositivo ${receivedId}`, ToastAndroid.SHORT);
-          console.log("Id dispositivo: ${receivedId}");
+        //If savedTicket is empty, we are at the first step
+        if (savedTicket == "") {
+          //If the length is 16, we have received the device's id
+          if (receivedData.length == 16) {
+            receivedId = receivedData;
+            console.log("Id dispositivo " + receivedId);
+          } else {
+            //Otherwise, the message
+            receivedMessage = receivedData;
+            console.log("Messaggio ricevuto " + receivedMessage);
+          }
         } else {
-          receivedMessage = receivedData;
-          //ToastAndroid.show(`Messaggio ricevuto ${receivedMessage}`, ToastAndroid.SHORT);
-          console.log("Messaggio ricevuto: ${receivedMessage}");
+          //At the second step, the client receives the response from the device
+            console.log("Risposta ricevuta " + receivedData);
+          this.sendToServer(receivedData);
         }
       });
     });
   }
-  _renderItem(item){
 
+  _renderItem(item){
     return(<TouchableOpacity onPress={() => this.connect(item.item)}>
             <View style={styles.deviceNameWrap}>
               <Text style={styles.deviceName}>{ item.item.name ? item.item.name : item.item.id }</Text>
             </View>
           </TouchableOpacity>)
   }
-  enable () {
-    BluetoothSerial.enable()
-    .then((res) => this.setState({ isEnabled: true }))
-    .catch((err) => Toast.showShortBottom(err.message))
-  }
 
-  disable () {
-    //Reset step
-    this.setState({ icon: require('./src/images/locked.png') });
-    savedTicket = "";
-    BluetoothSerial.disable()
-    .then((res) => this.setState({ isEnabled: false }))
-    .catch((err) => Toast.showShortBottom(err.message))
-  }
-
-  toggleBluetooth (value) {
+  toggleBluetooth(value) {
     if (value === true) {
       this.enable();
     } else {
       this.disable();
     }
+  }
+  enable() {
+    BluetoothSerial.enable()
+    .then((res) => this.setState({ isEnabled: true }))
+    .catch((err) => Toast.showShortBottom(err.message))
+  }
+  disable() {
+    //When bluetooth is disabled, ticket and icon are resetted
+    savedTicket = "";
+    this.setState({ icon: require('./src/images/locked.png') });
+    BluetoothSerial.disable()
+    .then((res) => this.setState({ isEnabled: false }))
+    .catch((err) => Toast.showShortBottom(err.message))
   }
 
   discoverAvailableDevices () {
@@ -144,76 +137,49 @@ export default class App extends Component<{}> {
     }
   }
 
-  //In base al bottone premuto, viene scelta l'operazione da fare
+  //Reset to the first step, according to the pushed button
   openLocker(){
-    this.savedTicket = "";
-    this.setState({ lastOperation: "unlock" });
-    this.authorizeOperation(this.state.lastOperation);
+    savedTicket = "";
+    this.authorizeOperation("unlock");
   }
   closeLocker(){
-    this.savedTicket = "";
-    this.setState({ lastOperation: "lock" });
-    this.authorizeOperation(this.state.lastOperation);
+    savedTicket = "";
+    this.authorizeOperation("lock");
   }
 
-  //Il client contatta il server per vedere se può effettuare operazioni
+  //The client contacts the server to be authorized
   authorizeOperation(typeOperation) {
-    if (savedTicket.length == 0) {
-      fetch('https://www.minecrime.it:8888/authorize-operation', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          client_id: idClient,
-          device_id: receivedId,
-          client_pass: pwdClient,
-          operation: typeOperation,
-          load: receivedMessage
-          /*client_id: idClient,
-          device_id: "1234567890device",
-          client_pass: pwdClient,
-          operation: typeOperation,
-          load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
-        })
-      }).then((response) => response.json())
-      .then((json) => {
-        var serverResponse = json;
-        savedTicket = json.ticket;
-        console.log(serverResponse.load);
-        this.sendToDevice(serverResponse.load, typeOperation);
+    console.log(idClient);
+    console.log(receivedId);
+    console.log(pwdClient);
+    console.log(typeOperation);
+    console.log(receivedMessage);
+    fetch('https://www.minecrime.it:8888/authorize-operation', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: idClient,
+        device_id: receivedId,
+        client_pass: pwdClient,
+        operation: typeOperation,
+        load: receivedMessage
       })
-      .catch((error) => {
-        console.error(error);
-      });
-    } else {
-      fetch('https://www.minecrime.it:8888/result', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          /*ticket: savedTicket,
-          load: "LtqED6LEbQLJicZXjwEZmeO4KnkSrtQ4gTGDNwyWhw5ztacq8ZULjjz4WHlRm5qs1+XbgrB2dCGhllKIrxsfmmvLePSwymhu7m2GvAxmhwPMmjevo8PiALCTCPSnM2nQ52DZbS3Mn3Ha8d9Ivv4JvA=="*/
-          ticket: savedTicket,
-          load: receivedMessage
-        })
-      }).then((response) => response.json())
-      .then((json) => {
-        var serverResponse = json;
-        savedTicket = "";
-        console.log(serverResponse.load);
-        this.sendToDevice(serverResponse.load, typeOperation);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    }
+    }).then((response) => response.json())
+    .then((json) => {
+      console.log(json);
+      var serverResponse = json;
+      savedTicket = json.ticket;
+      this.sendToDevice(serverResponse.load, typeOperation);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
-  //Se autenticato, viene inviato il One Time Pad al dispositivo
+  //The operation and its authorization are sent to the device
   sendToDevice(otp, operation){
     console.log(otp);
     BluetoothSerial.write(otp)
@@ -225,9 +191,31 @@ export default class App extends Component<{}> {
       } else if (operation=="unlock") {
         this.setState({ icon: require('./src/images/unlocked.png') });
       }
-      this.setState({ connected: true })
     })
     .catch((err) => console.log(err.message))
+  }
+
+  //The response is sent to the server, through the saved ticket
+  sendToServer(receivedData) {
+    fetch('https://www.minecrime.it:8888/result', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ticket: savedTicket,
+        load: receivedData
+      })
+    }).then((response) => response.json())
+    .then((json) => {
+      var serverResponse = json;
+      savedTicket = "";
+      console.log(serverResponse.load);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
   }
 
   render() {
