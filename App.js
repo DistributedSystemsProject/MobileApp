@@ -176,7 +176,7 @@ export default class App extends Component<{}> {
 
   //The client contacts the server to be authorized
   authorizeOperation() {
-    fetch('https://www.minecrime.it:8888/authorize-operation', {
+    fetch('https://SERVER_ADDRESS:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -212,7 +212,7 @@ export default class App extends Component<{}> {
 
   //The response is sent to the server, through the saved ticket
   sendToServer(receivedData) {
-    fetch('https://www.minecrime.it:8888/result', {
+    fetch('https://SERVER_ADDRESS:8888/result', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
