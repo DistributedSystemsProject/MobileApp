@@ -9,21 +9,19 @@ https://reactnative.dev/docs/environment-setup
 
 # Usage
 
-Once you have downloaded the repository, just execute the command:
+Once you have downloaded the repository, in the `App.js` file, change the two `fetch()`, according to your server address:
+```
+fetch('https://SERVER_ADDRESS:8888/authorize-operation', { ...
+fetch('https://SERVER_ADDRESS:8888/result', { ...
+```
+
+Then, just execute the command to build the application:
 
 `npx react-native run-android`
 
 or, if you want to run the app on an iOS device:
 
 `npx react-native run-ios`
-
-# Settings
-
-In the `App.js` file, change the two `fetch()`, according to your server address:
-```
-fetch('https://SERVER_ADDRESS:8888/authorize-operation', { ...
-fetch('https://SERVER_ADDRESS:8888/result', { ...
-```
 
 # Screenshots
 
