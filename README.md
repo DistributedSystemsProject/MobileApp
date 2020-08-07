@@ -20,10 +20,10 @@ or, if you want to run the app on an iOS device:
 # Settings
 
 In the `App.js` file, change the two `fetch()`, according to your server address:
+```
 fetch('https://SERVER_ADDRESS:8888/authorize-operation', { ...
 fetch('https://SERVER_ADDRESS:8888/result', { ...
-
-`npx react-native run-android`
+```
 
 # Screenshots
 
