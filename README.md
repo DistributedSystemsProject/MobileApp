@@ -1,6 +1,8 @@
 # Mobile App
 
-This is the React-Native cross-platform (Android and iOS) mobile application for locking/unlocking an Arduino Device through Bluetooth
+This is the React-Native cross-platform (Android and iOS) mobile application for locking/unlocking an Arduino Device through Bluetooth.
+
+The app works with both versions of the Server/Device (master and ecc branch, according to the selected cryptography system).
 
 # Requirements
 
