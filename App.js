@@ -18,6 +18,7 @@ const pwdClient = "clientpass";
 var receivedId = "";
 var receivedMessage = "";
 var savedTicket = "";
+var next = false;
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
@@ -28,7 +29,10 @@ export default class App extends Component<{}> {
       isEnabled: false,
       discovering: false,
       devices: [],
-      unpairedDevices: []
+      unpairedDevices: [],
+      lastOperation: "lock",
+      connected: "FALSE",
+      buttonDisabled: false
     }
   }
 
@@ -58,39 +62,47 @@ export default class App extends Component<{}> {
   }
 
   connect(device) {
-    BluetoothSerial.connect(device.id)
-    .then((res) => {
-      console.log(`Connesso al dispositivo ${device.name}`);
-      ToastAndroid.show(`Connesso al dispositivo ${device.name}`, ToastAndroid.SHORT);
-    })
-    .catch((err) => console.log((err.message)))
-    BluetoothSerial.withDelimiter('\r').then(() => {
-      Promise.all([
-        BluetoothSerial.isEnabled(),
-        BluetoothSerial.list(),
-      ]).then(values => {
-        const [isEnabled, devices] = values;
-      });
-      BluetoothSerial.on('read', data => {
-        var receivedData = data.data.trim();
-        //If savedTicket is empty, we are at the first step
-        if (savedTicket == "") {
-          //If the length is 16, we have received the device's id
-          if (receivedData.length == 16) {
-            receivedId = receivedData;
-            console.log("Id dispositivo " + receivedId);
+    if (this.state.connected == "FALSE") {
+      BluetoothSerial.connect(device.id)
+      .then((res) => {
+        console.log(`Connected to ${device.name}`);
+        this.setState({ connected: "TRUE" })
+      })
+      .catch((err) => {
+        console.log((err.message));
+        ToastAndroid.show(`Unable to connect`, ToastAndroid.SHORT);
+      })
+      BluetoothSerial.withDelimiter('\r').then(() => {
+        Promise.all([
+          BluetoothSerial.isEnabled(),
+          BluetoothSerial.list(),
+        ]).then(values => {
+          const [isEnabled, devices] = values;
+        });
+        BluetoothSerial.on('read', data => {
+          var receivedData = data.data.trim();
+          //If savedTicket is empty, we are at the first step
+          if (savedTicket == "") {
+            //If the length is 16, we have received the device's id
+            if (receivedData.length == 16) {
+              receivedId = receivedData;
+              console.log("Device id: " + receivedId);
+            } else {
+              //Otherwise, the message
+              receivedMessage = receivedData;
+              console.log("Received message: " + receivedMessage);
+              if (next == true) this.authorizeOperation(this.state.lastOperation);
+            }
           } else {
-            //Otherwise, the message
-            receivedMessage = receivedData;
-            console.log("Messaggio ricevuto " + receivedMessage);
+            //At the second step, the client receives the response from the device
+            console.log("Received response: " + receivedData);
+            this.sendToServer(receivedData);
           }
-        } else {
-          //At the second step, the client receives the response from the device
-            console.log("Risposta ricevuta " + receivedData);
-          this.sendToServer(receivedData);
-        }
+        });
       });
-    });
+    } else {
+      ToastAndroid.show(`You are already connected`, ToastAndroid.SHORT);
+    }
   }
 
   _renderItem(item){
@@ -117,6 +129,8 @@ export default class App extends Component<{}> {
     //When bluetooth is disabled, ticket and icon are resetted
     savedTicket = "";
     this.setState({ icon: require('./src/images/locked.png') });
+    this.setState({ connected: "FALSE" });
+    this.setState({ buttonDisabled: false });
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
     .catch((err) => Toast.showShortBottom(err.message))
@@ -137,23 +151,31 @@ export default class App extends Component<{}> {
     }
   }
 
-  //Reset to the first step, according to the pushed button
-  openLocker(){
-    savedTicket = "";
-    this.authorizeOperation("unlock");
+  //Unlock/lock action, according to the selected button
+  toggleLocker(operation) {
+    this.setState({ buttonDisabled: true });
+    if (this.state.connected == "TRUE") {
+      this.setState({ lastOperation: operation });
+      savedTicket = "";
+      if (!next) this.authorizeOperation();
+      else this.nextRequest("TmV4dE9wZXJhdGlvbg==");
+    } else {
+      ToastAndroid.show(`You are not connected`, ToastAndroid.SHORT);
+      this.setState({ buttonDisabled: false });
+    }
   }
-  closeLocker(){
-    savedTicket = "";
-    this.authorizeOperation("lock");
+
+  //This function is triggered if the user push buttons lock/unlock, after the first time
+  nextRequest(msg) {
+    BluetoothSerial.write(msg)
+    .then((res) => {
+      ToastAndroid.show(`Sending request`, ToastAndroid.SHORT);
+    })
+    .catch((err) => console.log(err.message))
   }
 
   //The client contacts the server to be authorized
-  authorizeOperation(typeOperation) {
-    console.log(idClient);
-    console.log(receivedId);
-    console.log(pwdClient);
-    console.log(typeOperation);
-    console.log(receivedMessage);
+  authorizeOperation() {
     fetch('https://www.minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
@@ -164,33 +186,26 @@ export default class App extends Component<{}> {
         client_id: idClient,
         device_id: receivedId,
         client_pass: pwdClient,
-        operation: typeOperation,
+        operation: this.state.lastOperation,
         load: receivedMessage
       })
     }).then((response) => response.json())
     .then((json) => {
-      console.log(json);
       var serverResponse = json;
       savedTicket = json.ticket;
-      this.sendToDevice(serverResponse.load, typeOperation);
+      this.sendToDevice(serverResponse.load);
     })
     .catch((error) => {
       console.error(error);
     });
   }
 
-  //The operation and its authorization are sent to the device
-  sendToDevice(otp, operation){
-    console.log(otp);
-    BluetoothSerial.write(otp)
+  //The authorized operation is sent to the device
+  sendToDevice(aop){
+    BluetoothSerial.write(aop)
     .then((res) => {
-      console.log(res);
-      ToastAndroid.show(`Operazione effettuata`, ToastAndroid.SHORT);
-      if (operation=="lock") {
-        this.setState({ icon: require('./src/images/locked.png') });
-      } else if (operation=="unlock") {
-        this.setState({ icon: require('./src/images/unlocked.png') });
-      }
+      ToastAndroid.show(`Operation in progress`, ToastAndroid.SHORT);
+      this.setState({ buttonDisabled: false });
     })
     .catch((err) => console.log(err.message))
   }
@@ -211,7 +226,14 @@ export default class App extends Component<{}> {
     .then((json) => {
       var serverResponse = json;
       savedTicket = "";
-      console.log(serverResponse.load);
+      next = true;
+      console.log("Success: "+serverResponse.success);
+      ToastAndroid.show(`Success`, ToastAndroid.SHORT);
+      if (this.state.lastOperation=="lock") {
+        this.setState({ icon: require('./src/images/locked.png') });
+      } else if (this.state.lastOperation=="unlock") {
+        this.setState({ icon: require('./src/images/unlocked.png') });
+      }
     })
     .catch((error) => {
       console.error(error);
@@ -225,7 +247,7 @@ export default class App extends Component<{}> {
           <Text style={styles.mainToolbarTitle}>ARDUINO SECURE LOCKER</Text>
         </View>
         <View style={styles.toolbar}>
-          <Text style={styles.toolbarTitle}>Attiva/Disattiva Bluetooth</Text>
+          <Text style={styles.toolbarTitle}>Enable/Disable Bluetooth</Text>
           <View style={styles.toolbarButton}>
             <Switch
               value={this.state.isEnabled}
@@ -235,7 +257,7 @@ export default class App extends Component<{}> {
         </View>
         <Button
           onPress={this.discoverAvailableDevices.bind(this)}
-          title="Trova dispositivi"
+          title="Rescan Devices"
         />
         <FlatList
           style={{flex:1}}
@@ -243,6 +265,7 @@ export default class App extends Component<{}> {
           keyExtractor={item => item.id}
           renderItem={(item) => this._renderItem(item)}
         />
+        <Text style={styles.dynamicText}>Connected: { this.state.connected }</Text>
         <View style={styles.center}>
           <Image
             source={ this.state.icon }
@@ -250,16 +273,16 @@ export default class App extends Component<{}> {
           />
         </View>
         <View style={styles.buttonView1}>
-          <Button
-            onPress={this.openLocker.bind(this)}
-            title="Apri"
+          <Button disabled={this.state.buttonDisabled}
+            onPress={this.toggleLocker.bind(this, "unlock")}
+            title="Unlock"
             style={styles.buttonAction}
           />
         </View>
         <View style={styles.buttonView2}>
-          <Button
-            onPress={this.closeLocker.bind(this)}
-            title="Chiudi"
+          <Button disabled={this.state.buttonDisabled}
+            onPress={this.toggleLocker.bind(this, "lock")}
+            title="Lock"
           />
         </View>
       </View>
@@ -286,6 +309,12 @@ const styles = StyleSheet.create({
     flex:1,
     marginTop:6
   },
+  dynamicText:{
+    textAlign:'center',
+    fontWeight:'bold',
+    fontSize: 22,
+    paddingBottom: 20
+  },
   toolbar:{
     padding: 20,
     flexDirection:'row'
@@ -307,9 +336,9 @@ const styles = StyleSheet.create({
     borderBottomWidth:1
   },
   imageLocker: {
-    width: 200,
-    height: 200,
-    marginBottom: 50
+    width: 150,
+    height: 150,
+    marginBottom: 30
   },
   buttonView1: {
     width: "50%",
@@ -318,7 +347,7 @@ const styles = StyleSheet.create({
   },
   buttonView2: {
     width: "50%",
-    paddingBottom: 40,
+    paddingBottom: 20,
     marginLeft: "25%"
   }
 });
