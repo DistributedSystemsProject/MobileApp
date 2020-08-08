@@ -131,6 +131,7 @@ export default class App extends Component<{}> {
     this.setState({ icon: require('./src/images/locked.png') });
     this.setState({ connected: "FALSE" });
     this.setState({ buttonDisabled: false });
+    next = false;
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
     .catch((err) => Toast.showShortBottom(err.message))
