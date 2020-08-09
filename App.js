@@ -30,9 +30,9 @@ export default class App extends Component<{}> {
       discovering: false,
       devices: [],
       unpairedDevices: [],
-      lastOperation: "lock",
       connected: "FALSE",
-      buttonDisabled: false
+      buttonDisabled: true,
+      lastOperation: "lock"
     }
   }
 
@@ -89,6 +89,7 @@ export default class App extends Component<{}> {
               console.log("Device id: " + receivedId);
             } else {
               //Otherwise, the message
+              this.setState({ buttonDisabled: false });
               receivedMessage = receivedData;
               console.log("Received message: " + receivedMessage);
               if (next == true) this.authorizeOperation(this.state.lastOperation);
@@ -130,7 +131,7 @@ export default class App extends Component<{}> {
     savedTicket = "";
     this.setState({ icon: require('./src/images/locked.png') });
     this.setState({ connected: "FALSE" });
-    this.setState({ buttonDisabled: false });
+    this.setState({ buttonDisabled: true });
     next = false;
     BluetoothSerial.disable()
     .then((res) => this.setState({ isEnabled: false }))
@@ -156,13 +157,11 @@ export default class App extends Component<{}> {
   toggleLocker(operation) {
     this.setState({ buttonDisabled: true });
     if (this.state.connected == "TRUE") {
-      this.setState({ lastOperation: operation });
       savedTicket = "";
-      if (!next) this.authorizeOperation();
+      if (!next) this.authorizeOperation(operation);
       else this.nextRequest("TmV4dE9wZXJhdGlvbg==");
     } else {
       ToastAndroid.show(`You are not connected`, ToastAndroid.SHORT);
-      this.setState({ buttonDisabled: false });
     }
   }
 
@@ -176,8 +175,8 @@ export default class App extends Component<{}> {
   }
 
   //The client contacts the server to be authorized
-  authorizeOperation() {
-    fetch('https://SERVER_ADDRESS:8888/authorize-operation', {
+  authorizeOperation(operationType) {
+    fetch('https://www.minecrime.it:8888/authorize-operation', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -187,7 +186,7 @@ export default class App extends Component<{}> {
         client_id: idClient,
         device_id: receivedId,
         client_pass: pwdClient,
-        operation: this.state.lastOperation,
+        operation: operationType,
         load: receivedMessage
       })
     }).then((response) => response.json())
@@ -213,7 +212,7 @@ export default class App extends Component<{}> {
 
   //The response is sent to the server, through the saved ticket
   sendToServer(receivedData) {
-    fetch('https://SERVER_ADDRESS:8888/result', {
+    fetch('https://www.minecrime.it:8888/result', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
