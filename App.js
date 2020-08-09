@@ -19,6 +19,7 @@ var receivedId = "";
 var receivedMessage = "";
 var savedTicket = "";
 var next = false;
+var lastOperation = "";
 var _ = require('lodash');
 
 export default class App extends Component<{}> {
@@ -31,8 +32,7 @@ export default class App extends Component<{}> {
       devices: [],
       unpairedDevices: [],
       connected: "FALSE",
-      buttonDisabled: true,
-      lastOperation: "lock"
+      buttonDisabled: true
     }
   }
 
@@ -92,7 +92,7 @@ export default class App extends Component<{}> {
               this.setState({ buttonDisabled: false });
               receivedMessage = receivedData;
               console.log("Received message: " + receivedMessage);
-              if (next == true) this.authorizeOperation(this.state.lastOperation);
+              if (next == true) this.authorizeOperation(lastOperation);
             }
           } else {
             //At the second step, the client receives the response from the device
@@ -158,7 +158,8 @@ export default class App extends Component<{}> {
     this.setState({ buttonDisabled: true });
     if (this.state.connected == "TRUE") {
       savedTicket = "";
-      if (!next) this.authorizeOperation(operation);
+      lastOperation = operation;
+      if (!next) this.authorizeOperation(lastOperation);
       else this.nextRequest("TmV4dE9wZXJhdGlvbg==");
     } else {
       ToastAndroid.show(`You are not connected`, ToastAndroid.SHORT);
@@ -229,9 +230,9 @@ export default class App extends Component<{}> {
       next = true;
       console.log("Success: "+serverResponse.success);
       ToastAndroid.show(`Success`, ToastAndroid.SHORT);
-      if (this.state.lastOperation=="lock") {
+      if (lastOperation=="lock") {
         this.setState({ icon: require('./src/images/locked.png') });
-      } else if (this.state.lastOperation=="unlock") {
+      } else if (lastOperation=="unlock") {
         this.setState({ icon: require('./src/images/unlocked.png') });
       }
     })
